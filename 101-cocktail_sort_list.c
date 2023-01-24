@@ -1,81 +1,98 @@
 #include "sort.h"
 
+void swap_node_ahead(listint_t **list, listint_t **tail, listint_t **shaker);
+void swap_node_behind(listint_t **list, listint_t **tail, listint_t **shaker);
+void cocktail_sort_list(listint_t **list);
+
 /**
- * _swap - swap current node
- * @prmCurrent: current node
- * @prmAfter: next node
- * @prmList: original list
- * Return: nothing void
+ * swap_node_ahead - swap node in a listint_t doubly-linked list
+ *                   list of integers with the node ahead of it.
+ * @list: pointer to the head of a doubly-linked list of integers.
+ * @tail: pointer to the tail of the doubly-linked list.
+ * @shaker: pointer to the current swapping node of the cocktail shaker algo.
  */
-
-void _swap(listint_t *prmCurrent, listint_t *prmAfter, listint_t **prmList)
+void swap_node_ahead(listint_t **list, listint_t **tail, listint_t **shaker)
 {
-	listint_t *before, *after;
+	listint_t *tmp = (*shaker)->next;
 
-	if (prmCurrent == NULL || prmAfter == NULL)
-		return;
-
-	before = prmCurrent->prev;
-	after  = prmAfter->next;
-
-	if (before != NULL)
-		before->next = prmAfter;
+	if ((*shaker)->prev != NULL)
+		(*shaker)->prev->next = tmp;
 	else
-		*prmList = prmAfter;
-
-	if (after != NULL)
-		after->prev = prmCurrent;
-
-	prmCurrent->next = after;
-	prmCurrent->prev = prmAfter;
-	prmAfter->next = prmCurrent;
-	prmAfter->prev = before;
-
-	print_list(*prmList);
+		*list = tmp;
+	tmp->prev = (*shaker)->prev;
+	(*shaker)->next = tmp->next;
+	if (tmp->next != NULL)
+		tmp->next->prev = *shaker;
+	else
+		*tail = *shaker;
+	(*shaker)->prev = tmp;
+	tmp->next = *shaker;
+	*shaker = tmp;
 }
 
 /**
- * cocktail_sort_list - function that sorts a doubly linked list of
- * integers in ascending order using the Cocktail shaker sort algorithm
- * @list: pointer to list to sort
- * Return: nothing void
+ * swap_node_behind - swap node in a listint_t doubly-linked
+ *                    list of integers with the node behind it.
+ * @list: pointer to the head of a doubly-linked list of integers.
+ * @tail: pointer to the tail of the doubly-linked list.
+ * @shaker: pointer to the current swapping node of the cocktail shaker algo.
  */
+void swap_node_behind(listint_t **list, listint_t **tail, listint_t **shaker)
+{
+	listint_t *tmp = (*shaker)->prev;
 
+	if ((*shaker)->next != NULL)
+		(*shaker)->next->prev = tmp;
+	else
+		*tail = tmp;
+	tmp->next = (*shaker)->next;
+	(*shaker)->prev = tmp->prev;
+	if (tmp->prev != NULL)
+		tmp->prev->next = *shaker;
+	else
+		*list = *shaker;
+	(*shaker)->next = tmp;
+	tmp->prev = *shaker;
+	*shaker = tmp;
+}
+
+/**
+ * cocktail_sort_list - sort listint_t doubly-linked list of integers in
+ *                      ascending order using the cocktail shaker algorithm.
+ * @list: pointer to the head of a listint_t doubly-linked list.
+ */
 void cocktail_sort_list(listint_t **list)
 {
-	int swapped;
-	listint_t *head = *list;
+	listint_t *tail, *shaker;
+	bool shaken_not_stirred = false;
 
 	if (list == NULL || *list == NULL || (*list)->next == NULL)
 		return;
 
-	do {
-		swapped = 0;
+	for (tail = *list; tail->next != NULL;)
+		tail = tail->next;
 
-		while (head->next != NULL)
+	while (shaken_not_stirred == false)
+	{
+		shaken_not_stirred = true;
+		for (shaker = *list; shaker != tail; shaker = shaker->next)
 		{
-			if (head->n > head->next->n)
+			if (shaker->n > shaker->next->n)
 			{
-				_swap(head, head->next, list);
-				swapped = 1;
-				continue;
+				swap_node_ahead(list, &tail, &shaker);
+				print_list((const listint_t *)*list);
+				shaken_not_stirred = false;
 			}
-			head = head->next;
 		}
-
-		swapped = 0;
-		head = head->prev;
-
-		while (head->prev != NULL)
+		for (shaker = shaker->prev; shaker != *list;
+				shaker = shaker->prev)
 		{
-			if (head->n < head->prev->n)
+			if (shaker->n < shaker->prev->n)
 			{
-				_swap(head->prev, head, list);
-				swapped = 1;
-				continue;
+				swap_node_behind(list, &tail, &shaker);
+				print_list((const listint_t *)*list);
+				shaken_not_stirred = false;
 			}
-			head = head->prev;
 		}
-		head = head->next;
-	} while (swapped == 1);
+	}
 }
