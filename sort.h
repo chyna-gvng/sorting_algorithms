@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+
 
 /* Comparison direction macros for bitonic sort */
 #define UP 0
